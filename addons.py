@@ -38,6 +38,9 @@ def change_column_names(df):
     return df, name_map
 
 def select_type(df, dtype, return_df=False):
+    """
+    Method to select columns with specified data types only
+    """
     cols_to_return = []
     types = df.dtypes
 
@@ -50,4 +53,18 @@ def select_type(df, dtype, return_df=False):
     else:
         return df.loc[:, [i for l1 in cols_to_return for i in l1]]
 
-
+def nan_share(df):
+    """
+    Show the percentage of missing values across all rows
+    """
+    import pandas as pd
+    nans = dict()
+    for c in df.columns:
+        s = df[c]
+        stf = pd.Series(pd.isnull(s).values).value_counts()
+        try:
+            if len(stf) > 1:
+                nans[c] = stf[1]/len(s)
+        except IndexError as err:
+            print(err)
+    return nans
