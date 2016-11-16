@@ -1,4 +1,4 @@
-def read_file(dir, type, low_memory=True, dtype={"sexo":str, "ind_nuevo":str, "ult_fec_cli_1t":str, "indext":str}):
+def read_file(dir, type, low_memory=True, dtype={"sexo":str, "ind_nuevo":str, "ult_fec_cli_1t":str, "indext":str}, limit=False):
     """
     Read a file with accordance to its type provided:
     train = regex(train)
@@ -11,6 +11,9 @@ def read_file(dir, type, low_memory=True, dtype={"sexo":str, "ind_nuevo":str, "u
     import re
     import pandas as pd
 
+    if limit:
+        num_rows = 700000
+
     try:
         file = [os.path.join(dir, f) for f in os.listdir(dir) if re.match('.*{}.*'.format(type), f)].pop()
     except IndexError as err:
@@ -18,12 +21,21 @@ def read_file(dir, type, low_memory=True, dtype={"sexo":str, "ind_nuevo":str, "u
         return 1
 
     try:
-        raw = pd.read_csv(file, dtype=dtype, low_memory=low_memory)
+        if type == 'train':
+            if limit:
+                raw = pd.read_csv(file, dtype=dtype, low_memory=False, nrows=num_rows)
+            else:
+                raw = pd.read_csv(file, dtype=dtype, low_memory=False)
+        elif type == 'test':
+            raw = pd.read_csv(file, dtype=dtype)
+        else:
+            raise Exception
     except Exception as err:
         print('Read error\n{}'.format(err))
         return 1
 
     return raw
+
 
 def change_column_names(df):
     """
@@ -36,6 +48,7 @@ def change_column_names(df):
     df.rename(columns=name_map, inplace=True)
 
     return df, name_map
+
 
 def select_type(df, dtype, return_df=False):
     """
@@ -53,6 +66,7 @@ def select_type(df, dtype, return_df=False):
     else:
         return df.loc[:, [i for l1 in cols_to_return for i in l1]]
 
+
 def nan_share(df):
     """
     Show the percentage of missing values across all rows
@@ -68,3 +82,30 @@ def nan_share(df):
         except IndexError as err:
             print(err)
     return nans
+
+
+def change_dtype(df, columns, type):
+    import pandas as pd
+
+    for c in columns:
+        print('Casting {} into {}'.format(c, type))
+        try:
+            df.loc[:, c] = df.loc[:, c].astype(type)
+        except ValueError:
+            nan = pd.notnull(df.loc[:, c])
+            df.loc[nan, c] = df.loc[nan, c].astype(type)
+    return df
+
+
+def get_random_sample(df, id):
+    """
+    Return a random 10% sample of the original data set
+    """
+    import pandas as pd
+
+    size = int((0.1*len(df)))
+
+    ids = pd.Series(df.loc[:, id].unique())
+    u_id = ids.sample(n=size)
+    return df[df.loc[:, id].isin(u_id)]
+
