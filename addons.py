@@ -28,6 +28,8 @@ def read_file(dir, type, low_memory=True, dtype={"sexo":str, "ind_nuevo":str, "u
                 raw = pd.read_csv(file, dtype=dtype, low_memory=False)
         elif type == 'test':
             raw = pd.read_csv(file, dtype=dtype)
+        elif type == 'reservoir':
+            raw = pd.read_csv(file, dtype=dtype)
         else:
             raise Exception
     except Exception as err:
@@ -108,4 +110,38 @@ def get_random_sample(df, id):
     ids = pd.Series(df.loc[:, id].unique())
     u_id = ids.sample(n=size)
     return df[df.loc[:, id].isin(u_id)]
+
+
+def reservoir_sampling(dir, k, type='train', reservoir='reservoir.csv'):
+    import os
+    import re
+    import random
+
+    try:
+        file = [os.path.join(dir, f) for f in os.listdir(dir) if re.match('.*{}.*'.format(type), f)].pop()
+    except IndexError as err:
+        print('File {} not found\n{}'.format(file, err))
+        return 1
+
+    try:
+        result = dict()
+        with open(file) as f:
+            for i, line in enumerate(f):
+                if i < k:
+                    result[i] = line
+                else:
+                    seed = random.randint(1, i)
+                    if seed < k:
+                        result[seed] = line
+
+        with open(dir + '/' + reservoir, 'w') as fw:
+            for (k, v) in result.items():
+                fw.write(v)
+            fw.close()
+
+        return reservoir.split('.')[0]
+    except Exception as err:
+        print('Read error\n{}'.format(err))
+        return 1
+
 
