@@ -113,6 +113,15 @@ def get_random_sample(df, id):
 
 
 def reservoir_sampling(dir, k, type='train', reservoir='reservoir.csv'):
+    """
+    Implementation of Reservoir Sampling
+    https://en.wikipedia.org/wiki/Reservoir_sampling
+    :param dir:
+    :param k:
+    :param type:
+    :param reservoir:
+    :return:
+    """
     import os
     import re
     import random
