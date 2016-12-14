@@ -1,4 +1,10 @@
-def read_file(dir, type, low_memory=True, dtype={"sexo":str, "ind_nuevo":str, "ult_fec_cli_1t":str, "indext":str}, limit=False):
+def read_file(dir, type,
+              dtype={"sexo":str,
+                     "ind_nuevo":str,
+                     "ult_fec_cli_1t": str,
+                     "indext":str},
+              limit=False,
+              limit_rows=700000):
     """
     Read a file with accordance to its type provided:
     train = regex(train)
@@ -12,7 +18,7 @@ def read_file(dir, type, low_memory=True, dtype={"sexo":str, "ind_nuevo":str, "u
     import pandas as pd
 
     if limit:
-        num_rows = 700000
+        num_rows = limit_rows
 
     try:
         file = [os.path.join(dir, f) for f in os.listdir(dir) if re.match('.*{}.*'.format(type), f)].pop()
@@ -23,9 +29,9 @@ def read_file(dir, type, low_memory=True, dtype={"sexo":str, "ind_nuevo":str, "u
     try:
         if type == 'train':
             if limit:
-                raw = pd.read_csv(file, dtype=dtype, low_memory=False, nrows=num_rows)
+                raw = pd.read_csv(file, dtype=dtype, nrows=num_rows)
             else:
-                raw = pd.read_csv(file, dtype=dtype, low_memory=False)
+                raw = pd.read_csv(file, dtype=dtype)
         elif type == 'test':
             raw = pd.read_csv(file, dtype=dtype)
         elif type == 'reservoir':
